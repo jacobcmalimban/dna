@@ -50,10 +50,10 @@ public class seq {
 		// calculate hamming distance
 		int n = seqIn.size();
 		int l = seqIn.get(0).length();
-		int slicount = l-m;
+		int slicount = l-m+1;
 		String[][] slices = new String[n][slicount];
 
-//wtf is this array of arraylists
+// what is this array of arraylists
 		ArrayList<String>[] hams = new ArrayList[seqIn.size()];
 		//Set<String> hams = new HashSet<String>();
 		int d = 1;
@@ -66,7 +66,7 @@ public class seq {
 
 			for(int j = 0; j < slices[i].length; j++) { // each m-long dna slice
 				String slice = slices[i][j] = seqIn.get(i).substring(j, j+m);
-
+System.out.println(slicount+" "+j);
 				outie:
 				for(int k = 0; k < perms.length; k++) { // perms = 256
 					int mismatch = 0;
