@@ -57,27 +57,18 @@ public class seq {
 		ArrayList<String>[] hams = new ArrayList[seqIn.size()];
 		//Set<String> hams = new HashSet<String>();
 		int d = 1;
-		
+
 		for(int i = 0; i < slices.length; i++) { // each dna sequence
 			hams[i] = new ArrayList<>();
 
-
-// y are you skipping the last ones!?!?!
-
 			for(int j = 0; j < slices[i].length; j++) { // each m-long dna slice
 				String slice = slices[i][j] = seqIn.get(i).substring(j, j+m);
-System.out.println(slicount+" "+j);
+
 				outie:
 				for(int k = 0; k < perms.length; k++) { // perms = 256
 					int mismatch = 0;
 		// calculate hamming distance
-/* */
 					for(int x = 0; x < m; x++) { // each char in slice
-						if (perms[k].equals("AAGG")) {
-System.out.println("\t\t\t"+slice + "," + perms[k] + "," +x+"slice"+j);
-							System.out.println (slice.charAt(x) + ", " +perms[k].charAt(x) + ":" + (slice.charAt(x) == perms[k].charAt(x)));
-
-}
 						if ( slice.charAt(x) == perms[k].charAt(x) )
 							continue;
 						else
@@ -85,19 +76,13 @@ System.out.println("\t\t\t"+slice + "," + perms[k] + "," +x+"slice"+j);
 								continue outie; //break
 					}
 
-if(perms[k].equals("AAGG"))
-System.out.println("\t\t"+slice+","+perms[k]+","+mismatch);
-// y some 
 					if (mismatch <= d)
 						hams[i].add(perms[k]);
-	//hams.add(perm[k]);
-/* */
 				}
 			}
 		}
 
-		// find same perm across all sequences 
-		
+		// find same perm across all sequences
 		// 1, 2, 3, 4
 		// 2, 4, 1
 		// 1, 3
