@@ -16,23 +16,14 @@ import java.io.*;
 import java.util.*;
 
 public class seq {
+	private static Semaphore sem = new Semaphore(1);
+	private static HashSet<String> hams = new HashSet<String>();
+	private static int d, m, n, l;
+
 	public static void main(String[] args) {
 
-		// create threads
-		Thread[] thread = new Thread[4];
-		for(int i = 0; i < 4; i++)
-			threads[i] = new Thread(new Volunteer("Volunteer " + i, i);
-
-		int m=4;
+		m = 4;
 		String[] perms = new String[(int)Math.pow(4,m)];
-
-		// generate all m-long strings
-		// create 0 left padded base 4 strings
-		// & convert to A, C, G, T
-		for(int i = 0; i<perms.length; i++) {
-			perms[i] = String.format("%0" + m + "d", Integer.parseInt(Integer.toString(i, 4)));
-			perms[i] = perms[i].replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T");
-		}
 
 		// obtain sequences
 		String fileName = "input.txt", line;
@@ -53,21 +44,53 @@ public class seq {
 		}
 
 		// slice substrings
-		// calculate hamming distance
-		int n = seqIn.size();
-		int l = seqIn.get(0).length();
-		int slicount = l-m+1;
-		String[][] slices = new String[n][slicount];
 
-// what is this array of arraylists
-		ArrayList<String>[] hams = new ArrayList[seqIn.size()];
-		//Set<String> hams = new HashSet<String>();
+		// generate m-long strings from first input dna sequence
+			// create 0 left padded base 4 strings
+			// & convert to A, C, G, T
+
+		// calculate hamming distance
+		n = seqIn.size();
+		l = seqIn.get(0).length();
+		int slicount = l-m+1;
 		int d = 1;
 
-		for(int i = 0; i < slices.length; i++) { // each dna sequence
-			hams[i] = new ArrayList<>();
+		for(int i = 0; i < slicount; i++) { // each m-long dna slice
+			hams.add( seqIn.get(0).substring(i, i+m) );
+		}
 
-			for(int j = 0; j < slices[i].length; j++) { // each m-long dna slice
+		// create threads
+		Thread[] threads = new Thread[4];
+		for(int i = 0; i < threads.length; i++) {
+			threads[i] = new Thread(new Volunteer("Volunteer " + i, i);
+			threads[i].start();
+		}
+
+		// wait for all sequence1's hams to exist
+		for(int i = 0; i < threads.length; i++)
+			try {
+				threads[i].join();
+			} catch (Exception e) { System.out.println("lol threads gone cray ;((("); }
+
+/** /
+
+Should I make an Array of Hashsets?
+
+If I do, I can just compare for matches at the end
+
+If I don't, then I have to parallel create another temporary hashset
+ for each thread, combine, and check after each combined thing
+
+
+Is there a way to not have to generate new hammings and only check the old ones?
+
+YES THERE IS
+ but I don't know how...
+
+/**/
+
+
+/** /
 				String slice = slices[i][j] = seqIn.get(i).substring(j, j+m);
 
 				outie:
@@ -87,6 +110,7 @@ public class seq {
 				}
 			}
 		}
+/**/
 
 		// find same perm across all sequences
 		// 1, 2, 3, 4
@@ -102,7 +126,7 @@ public class seq {
 	}
 }
 
-private static class Volunteer {
+private static class Volunteer implements Runnable {
 	private String name;
 	private int id;
 
@@ -112,6 +136,22 @@ private static class Volunteer {
 	}
 
 	public void run() {
-		
+		private static HashSet<String> ham = new HashSet<String>();
+		while( hams.iterator().next() ) { // iterate through each legal
+			// if GGAG
+			/*
+				AGAG
+				GAAG
+				GGAG
+				GGAA
+			*/
+			// add to own ham
+
+		}
+
+		// combine with original
+		sem.acquire();
+		hams.addAll(ham);
+		sem.release();
 	}
 }
