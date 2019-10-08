@@ -22,6 +22,12 @@ public class par {
 	private static int d, m, n, l;
 
 	public static void main(String[] args) {
+		System.out.println("Jacob Malimban");
+		ArrayList<String> eq = new ArrayList<String>();
+		for(int i = 0; i < 80; i++)
+			eq.add("=");
+		eq.forEach(System.out::print);
+		System.out.println();
 
 		m = 4;
 		String[] perms = new String[(int)Math.pow(4,m)];

@@ -17,6 +17,11 @@ import java.util.*;
 
 public class seq {
 	public static void main(String[] args) {
+		System.out.println("Jacob Malimban");
+		for(int i = 0; i < 80; i++)
+			System.out.print("=");
+		System.out.println();
+
 		int m=4;
 		String[] perms = new String[(int)Math.pow(4,m)];
 
