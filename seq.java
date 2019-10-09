@@ -105,6 +105,13 @@ public class seq {
 
 		for (int i = 1; i < hams.length; i++)
 			hams[0].retainAll(hams[i]);
+
+		// remove duplicates
+		Set<String> set = new LinkedHashSet<>();
+		set.addAll(hams[0]);
+		hams[0].clear();
+		hams[0].addAll(set);
+
 		System.out.println(hams[0]);
 	}
 }
