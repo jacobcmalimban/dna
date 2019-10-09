@@ -15,12 +15,12 @@ import java.lang.*;
 import java.io.*;
 import java.util.*;
 
-public class par {
+public class par2 {
 	private static Semaphore sem = new Semaphore(1);
 	private static HashSet<String> hams = new HashSet<String>();
 	private static HashSet<String> hamsCopy = new HashSet<String>();
 	private static int n, l, m, d, p;
-	private static final String proteins = "ACTG";
+	private static String proteins = "ACTG";
 
 
 	public static void main(String[] args) {
@@ -65,7 +65,7 @@ public class par {
 		int slicount = l-m+1;
 		HashSet<String> tempHams = new HashSet<String>();
 
-		for(int i = 0; i < n; i++) { // each sequence
+		for(int i = 0; i < n; i++) {
 			hams = new HashSet<String>();
 			hamsCopy = new HashSet<String>();
 
@@ -75,12 +75,47 @@ public class par {
 			}
 
 			// create threads
-			threadMe();
+			Thread[] threads = new Thread[p];
+			for(int j = 0; j < threads.length; j++) {
+				threads[j] = new Thread(new Volunteer("Volunteer " + j, j));
+				threads[j].start();
+			}
+
+/** /
+
+if p-threads:
+ == 4, okay
+ % 4, make hams into p%4 partitions and have threads take care of it
+
+p = 2,
+ threads do their id and id+1 proteins
+
+p = 6, 10
+
+p = 1
+ assume p=2, but have main work as well
+
+p = 3, 7, 11, (4n -1)
+ assume p % 4
+
+p = 5, 9
+ maybe have 
+
+
+...
+What if we just create Array of Hashsets, 
+List<
+/**/
+
+			// wait for all seqIn(i)'s hams to exist
+			for(int j = 0; j < threads.length; j++)
+				try {
+					threads[j].join();
+				} catch (Exception e) { System.out.println("lol threads gone cray ;((("); }
 
 			// combine pure slices + d-different hammings
 			hams.addAll(hamsCopy);
 
-//System.out.println(hams);
 			// hams = valid seqIn(i) hams
 			if ( i == 0 ) {
 				tempHams = new HashSet<String>(hams); // save verified previous hams
@@ -111,37 +146,8 @@ YES THERE IS
 /**/
 
 	private static void threadMe() {
-		Thread[] threads = new Thread[p];
-		for(int j = 0; j < threads.length; j++) {
-			threads[j] = new Thread(new Volunteer("Volunteer " + j, j));
-			threads[j].start();
-		} // fine if p % 4
-
-		if( (p+1) % 4 == 0) { // p = 3, 7, 11
-			sliceMe(proteins.substring(3));
-		} else if ( (p-1) % 4 == 0) { // p = 1, 5, 9
-			sliceMe(proteins.substring(2,3));
-			sliceMe(proteins.substring(3));
-		} else if (p % 2 == 0) { // p = 2, 6, 10
-			sliceMe(proteins.substring(2,3));
-			sliceMe(proteins.substring(3));
-		}
-
-		// wait for all seqIn(i)'s hams to exist
-		for(int j = 0; j < threads.length; j++)
-			try {
-				threads[j].join();
-			} catch (Exception e) { System.out.println("lol threads gone cray ;((("); }
-
 	}
 
-/** /
-SUGGESTION:
-
-to make use of multithreading, have sliceMe use hams[id%4]
-will have to change '// slice substrings' to divide slices in ~equal parts into hams[id%4]
-also undo Volunteer { ... this.id = id %4 }, so to know which hams[id%4] to use
-/**/
 	private static void sliceMe(String protein) {
 		HashSet<String> ham = new HashSet<String>();
 
@@ -155,15 +161,8 @@ also undo Volunteer { ... this.id = id %4 }, so to know which hams[id%4] to use
 			*/
 
 			// add to own ham
-
 			for ( int i = 0; i < s.length(); i++) { // assumes 4x threads
-				ham.add( s.substring(0,i) .concat(protein.repeat(d)) .concat(s.substring(i+d)) );
-/** /
-String str = s.substring(0,i) .concat(protein.repeat(d)) .concat(s.substring(i+d));// );
-ham.add(str);
-if(str.length() < 4)
-System.out.print(i+"i "+s+":"+str+" "+"pro: "+protein);
-/**/
+				ham.add( s.substring(0,i) .concat(protein.repeat(d) ) .concat(s.substring(i+d)) );
 			}
 
 		}
@@ -180,23 +179,16 @@ System.out.print(i+"i "+s+":"+str+" "+"pro: "+protein);
 
 		public Volunteer(String name, int id) {
 			this.name = name;
-			this.id = id % 4;
+			this.id = id;
 		}
 
 		public void run() {
-
-			if( p % 4 == 0)
+			if (p % 2 == 0)
 				sliceMe(proteins.substring(id,id+1));
-			else if (p < 3) {
+				if(p % 4 != 0) // runs when p = 2, 6, 10, ...
+					sliceMe(proteins.substring(id+1, id+2));
+			else // p = 1, 5, 9	3, 7, 11
 				sliceMe(proteins.substring(id,id+1));
-				sliceMe(proteins.substring(id+1,id+2));
-			} else if( (p+1) % 4 == 0) { // p = 3, 7, 11
-				sliceMe(proteins.substring(id,id+1));
-			} else if ( (p-1) % 4 == 0) { // p = 5, 9, 13
-				sliceMe(proteins.substring(id,id+1));
-			} else if (p % 2 == 0) { // p = 6, 10, 14
-				sliceMe(proteins.substring(id,id+1));
-			}
 		}
 	}
 }

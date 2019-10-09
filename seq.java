@@ -1,4 +1,4 @@
-/** / 
+/** /
 n = string count
 l = string length
 m = substring length
@@ -16,13 +16,44 @@ import java.io.*;
 import java.util.*;
 
 public class seq {
+	private static int n, l, m, d, p;
 	public static void main(String[] args) {
 		System.out.println("Jacob Malimban");
 		for(int i = 0; i < 80; i++)
 			System.out.print("=");
 		System.out.println();
 
-		int m=4;
+		// obtain sequences
+		String fileName = "input.txt", line;
+		List<String> seqIn = new ArrayList<String>();
+
+		try {
+			FileReader fReader = new FileReader(fileName);
+			BufferedReader bReader = new BufferedReader(fReader);
+			boolean first = true;
+
+			while((line = bReader.readLine()) != null) {
+				if(first) {
+					int ints[] = new int[5];
+					int index = 0;
+					for (String iStr : line.split("\\s+") )
+						ints[index++] = Integer.parseInt(iStr);
+					n = ints[0];
+					l = ints[1];
+					m = ints[2];
+					d = ints[3];
+					p = 1;
+					first = false;
+				} else
+					seqIn.add(line);
+				//System.out.println(line);
+			}
+
+			bReader.close();
+		} catch(Exception e) {
+			System.out.println("Unable to open file" + fileName);
+		}
+
 		String[] perms = new String[(int)Math.pow(4,m)];
 
 		// generate all m-long strings
@@ -33,35 +64,13 @@ public class seq {
 			perms[i] = perms[i].replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T");
 		}
 
-		// obtain sequences
-		String fileName = "input.txt", line;
-		List<String> seqIn = new ArrayList<String>();
-
-		try {
-			FileReader fReader = new FileReader(fileName);
-			BufferedReader bReader = new BufferedReader(fReader);
-
-			while((line = bReader.readLine()) != null) {
-				seqIn.add(line);
-				System.out.println(line);
-			}
-
-			bReader.close();
-		} catch(Exception e) {
-			System.out.println("Unable to open file" + fileName);
-		}
-
 		// slice substrings
 		// calculate hamming distance
-		int n = seqIn.size();
-		int l = seqIn.get(0).length();
 		int slicount = l-m+1;
 		String[][] slices = new String[n][slicount];
 
 // what is this array of arraylists
 		ArrayList<String>[] hams = new ArrayList[seqIn.size()];
-		//Set<String> hams = new HashSet<String>();
-		int d = 1;
 
 		for(int i = 0; i < slices.length; i++) { // each dna sequence
 			hams[i] = new ArrayList<>();
@@ -72,6 +81,7 @@ public class seq {
 				outie:
 				for(int k = 0; k < perms.length; k++) { // perms = 256
 					int mismatch = 0;
+
 		// calculate hamming distance
 					for(int x = 0; x < m; x++) { // each char in slice
 						if ( slice.charAt(x) == perms[k].charAt(x) )
@@ -81,7 +91,7 @@ public class seq {
 								continue outie; //break
 					}
 
-					if (mismatch <= d)
+					//if (mismatch <= d)
 						hams[i].add(perms[k]);
 				}
 			}
@@ -96,39 +106,5 @@ public class seq {
 		for (int i = 1; i < hams.length; i++)
 			hams[0].retainAll(hams[i]);
 		System.out.println(hams[0]);
-/** /
-		for (int i = 0; i < hams[0].size(); i++) { // for each valid hammings
-			int j;
-			for(j = 1; j < hams.length; j++) { 
-//			System.out.println(hams[0]);
-				if ( Arrays.stream(hams[0]).anyMatch(hams[j]) )
-					continue;
-				else
-					break;
-			}
-			if (j == hams.length) // gone through all good
-				System.out.println(hams[0].get(i));
-		}
-/**/
 	}
 }
-
-
-/** /
-// multithreading
-Thread[] thread = new Thread[4];
-for(int i = 0; i < 4; i++)
-	threads[i] = new Thread(new Volunteer("Volunteer " + i, i);
-
-private static class Volunteer {
-	private String name;
-	private int id;
-	
-	pubic Volunteer(String name, int id) {
-		this.name = name;
-		this.id = id;
-	}
-	
-	public void run(); 
-}
-/**/
