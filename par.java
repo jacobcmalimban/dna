@@ -74,7 +74,7 @@ public class par {
 				hams.add( seqIn.get(i).substring(j, j+m) ); // only pure slices
 			}
 
-			// create threads
+			// create threads, process d-hammings
 			threadMe();
 
 			// combine pure slices + d-different hammings
@@ -110,6 +110,11 @@ YES THERE IS
 
 /**/
 
+	/**
+	 * Main thread creates parallel threads and processes certain d-hammings
+	 *
+	 *
+	 */
 	private static void threadMe() {
 		Thread[] threads = new Thread[p];
 		for(int j = 0; j < threads.length; j++) {
@@ -142,6 +147,12 @@ to make use of multithreading, have sliceMe use hams[id%4]
 will have to change '// slice substrings' to divide slices in ~equal parts into hams[id%4]
 also undo Volunteer { ... this.id = id %4 }, so to know which hams[id%4] to use
 /**/
+
+	/**
+	 * Thread calls method to create d-hammings
+	 * @param protein - either A, C, T, G
+	 *
+	 */
 	private static void sliceMe(String protein) {
 		HashSet<String> ham = new HashSet<String>();
 
@@ -156,7 +167,7 @@ also undo Volunteer { ... this.id = id %4 }, so to know which hams[id%4] to use
 
 			// add to own ham
 
-			for ( int i = 0; i < s.length(); i++) { // assumes 4x threads
+			for ( int i = 0; i+d-1 < s.length(); i++) { // are you kidding me, is this #11's fix?
 				ham.add( s.substring(0,i) .concat(protein.repeat(d)) .concat(s.substring(i+d)) );
 /** /
 String str = s.substring(0,i) .concat(protein.repeat(d)) .concat(s.substring(i+d));// );
