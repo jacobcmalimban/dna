@@ -74,10 +74,10 @@ public class par {
 				hams.add( seqIn.get(i).substring(j, j+m) ); // only pure slices
 			}
 
-			// create threads, process d-hammings
+			// create threads & d-hammings
 			threadMe();
 
-			// combine pure slices + d-different hammings
+			// combine pure slices + d-different hammings into hams
 			hams.addAll(hamsCopy);
 
 //System.out.println(hams);
@@ -85,7 +85,7 @@ public class par {
 			if ( i == 0 ) {
 				tempHams = new HashSet<String>(hams); // save verified previous hams
 			} else {
-				tempHams.retainAll(hams);
+				tempHams.retainAll(hams); // only save hams in both Sets
 			}
 		}
 
@@ -111,8 +111,8 @@ YES THERE IS
 /**/
 
 	/**
-	 * Main thread creates parallel threads and processes certain d-hammings
-	 *
+	 * Main thread creates parallel threads
+	 * Depending on threadCount, create d-hamming different substrings
 	 *
 	 */
 	private static void threadMe() {
@@ -122,7 +122,8 @@ YES THERE IS
 			threads[j].start();
 		} // fine if p % 4
 
-		if( (p+1) % 4 == 0) { // p = 3, 7, 11
+		if( p%4 == 0 ) {
+		} else if( (p+1) % 4 == 0) { // p = 3, 7, 11
 			sliceMe(proteins.substring(3));
 		} else if ( (p-1) % 4 == 0) { // p = 1, 5, 9
 			sliceMe(proteins.substring(2,3));
@@ -150,6 +151,7 @@ also undo Volunteer { ... this.id = id %4 }, so to know which hams[id%4] to use
 
 	/**
 	 * Thread calls method to create d-hammings
+	 * for each m-long dna slice, create d-hamming different variants
 	 * @param protein - either A, C, T, G
 	 *
 	 */
@@ -198,7 +200,7 @@ System.out.print(i+"i "+s+":"+str+" "+"pro: "+protein);
 
 			if( p % 4 == 0)
 				sliceMe(proteins.substring(id,id+1));
-			else if (p < 3) {
+			else if (p < 3) { //p = 1, 2
 				sliceMe(proteins.substring(id,id+1));
 				sliceMe(proteins.substring(id+1,id+2));
 			} else if( (p+1) % 4 == 0) { // p = 3, 7, 11
