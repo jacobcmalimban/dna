@@ -15,7 +15,7 @@ import java.lang.*;
 import java.io.*;
 import java.util.*;
 
-public class par {
+public class WorkStealingPar {
 	private static Semaphore sem = new Semaphore(1);
 	private static HashSet<String> hams = new HashSet<String>();
 	private static HashSet<String> hamsCopy = new HashSet<String>();
