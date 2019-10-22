@@ -80,7 +80,7 @@ public class par {
 			// combine pure slices + d-different hammings into hams
 			hams.addAll(hamsCopy);
 
-//System.out.println(hams);
+System.out.println(hams);
 			// hams = valid seqIn(i) hams
 			if ( i == 0 ) {
 				tempHams = new HashSet<String>(hams); // save verified previous hams
@@ -169,14 +169,21 @@ also undo Volunteer { ... this.id = id %4 }, so to know which hams[id%4] to use
 
 			// add to own ham
 
+//			for ( int i = 0; i+d-1 < s.length(); i++) { // are you kidding me, is this #11's fix?
+//				ham.add( s.substring(0,i) .concat(protein.repeat(d)) .concat(s.substring(i+d)) );
+
 			for ( int i = 0; i+d-1 < s.length(); i++) { // are you kidding me, is this #11's fix?
-				ham.add( s.substring(0,i) .concat(protein.repeat(d)) .concat(s.substring(i+d)) );
-/** /
-String str = s.substring(0,i) .concat(protein.repeat(d)) .concat(s.substring(i+d));// );
+				for ( int j = 1; j <= d; j++) {
+//					ham.add( s.substring(0,i) .concat(protein.repeat(j)) .concat(s.substring(i+j)) );
+
+
+/* */
+String str = s.substring(0,i) .concat(protein.repeat(j)) .concat(s.substring(i+j));
 ham.add(str);
-if(str.length() < 4)
-System.out.print(i+"i "+s+":"+str+" "+"pro: "+protein);
+if(protein.equals("A"))
+System.out.print(i+"i "+s+":"+str+" "+"pro: "+protein+"\t");
 /**/
+				}
 			}
 
 		}
@@ -198,6 +205,13 @@ System.out.print(i+"i "+s+":"+str+" "+"pro: "+protein);
 
 		public void run() {
 
+
+		/** /
+			assuming p = 4
+			when d = 2,
+			new slices only include AA, CC, TT, GG
+			Need AC, AT, AG, ... as well
+		/**/
 			if( p % 4 == 0)
 				sliceMe(proteins.substring(id,id+1));
 			else if (p < 3) { //p = 1, 2
