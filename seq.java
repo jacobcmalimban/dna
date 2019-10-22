@@ -60,7 +60,7 @@ public class seq {
 		// create 0 left padded base 4 strings
 		// & convert to A, C, G, T
 		for(int i = 0; i<perms.length; i++) {
-			perms[i] = String.format("%0" + m + "d", Integer.parseInt(Integer.toString(i, 4)));
+			perms[i] = String.format("%0" + m + "d", Integer.parseInt(Integer.toString(i, 4))); // d = 1
 			perms[i] = perms[i].replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T");
 		}
 
@@ -69,7 +69,7 @@ public class seq {
 		int slicount = l-m+1;
 		String[][] slices = new String[n][slicount];
 
-// what is this array of arraylists
+// what is this string array of arraylists
 		ArrayList<String>[] hams = new ArrayList[seqIn.size()];
 
 		for(int i = 0; i < slices.length; i++) { // each dna sequence
