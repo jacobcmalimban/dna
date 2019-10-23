@@ -17,18 +17,17 @@ import java.util.*;
 
 public class par {
 	private static Semaphore sem = new Semaphore(1);
+	private static String[] perms;
+	private static String[][] dValid;
 	private static HashSet<String> hams = new HashSet<String>();
 	private static HashSet<String> hamsCopy = new HashSet<String>();
 	private static int n, l, m, d, p;
 	private static final String proteins = "ACTG";
 
-
 	public static void main(String[] args) {
 		System.out.println("Jacob Malimban");
-		ArrayList<String> eq = new ArrayList<String>();
 		for(int i = 0; i < 80; i++)
-			eq.add("=");
-		eq.forEach(System.out::print);
+			System.out.print("=");
 		System.out.println();
 
 		// obtain sequences
@@ -41,7 +40,7 @@ public class par {
 			boolean first = true;
 
 			while((line = bReader.readLine()) != null) {
-				if (first) {
+				if(first) {
 					int ints[] = new int[5];
 					int index = 0;
 					for (String iStr : line.split("\\s+") )
@@ -61,137 +60,93 @@ public class par {
 			System.out.println("Unable to open file" + fileName);
 		}
 
-		// begin processing
+		perms = new String[(int)Math.pow(4,m)];
+
+		// generate all m-long strings
+		// create 0 left padded base 4 strings
+		// & convert to A, C, G, T
+		for(int i = 0; i<perms.length; i++) {
+			perms[i] = String.format("%0" + m + "d", Integer.parseInt(Integer.toString(i, 4)));
+			perms[i] = perms[i].replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T");
+		}
+
+// CHANGE ME
+
+/** /
+		// generate valid d-distance difference
+		dValid = new String[(int)Math.pow(4,d)];
+		for(int i = 0; i < dValid.length; i++) { // d hammings
+			dValid[i] = String.format("%0" + d + "d", Integer.parseInt(Integer.toString(i, 4)));
+			dValid[i] = dValid[i].replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T");
+		}
+/**/
+
+		// generate valid d-distance difference
+		dValid = new String[p][(int)Math.pow(4,d)];
+		for(int i = 0; i < dValid[0].length; ) { // d hammings
+			for(int j = 0; j < p; j++) { // distribute workload
+				dValid[j][i] = String.format("%0" + d + "d", Integer.parseInt(Integer.toString(i, 4)));
+				dValid[j][i] = dValid[j][i].replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T");
+				i++;
+			}
+		}
+
+		// create threads
+		for(int i = 0; i < p; i++) {
+			
+		}
+		// .join()
+
+
+/** /
+		// slice substrings
+		// calculate hamming distance
 		int slicount = l-m+1;
-		HashSet<String> tempHams = new HashSet<String>();
+		String[][] slices = new String[n][slicount];
 
-		for(int i = 0; i < n; i++) { // each sequence
-			hams = new HashSet<String>();
-			hamsCopy = new HashSet<String>();
+		for(int i = 0; i < slices.length; i++) { // each dna sequence
+			hams[i] = new ArrayList<>();
 
-			// slice substrings
-			for(int j = 0; j < slicount; j++) { // each m-long dna slice
-				hams.add( seqIn.get(i).substring(j, j+m) ); // only pure slices
-			}
+			for(int j = 0; j < slices[i].length; j++) { // each m-long dna slice
+				String slice = slices[i][j] = seqIn.get(i).substring(j, j+m);
 
-			// create threads & d-hammings
-			threadMe();
+				outie:
+				for(int k = 0; k < perms.length; k++) { // perms = 256
+					int mismatch = 0;
 
-			// combine pure slices + d-different hammings into hams
-			hams.addAll(hamsCopy);
+		// calculate hamming distance
+					for(int x = 0; x < m; x++) { // each char in slice
+						if ( slice.charAt(x) == perms[k].charAt(x) )
+							continue;
+						else
+							if (++mismatch > d)
+								continue outie; //break
+					}
 
-//System.out.println(hams);
-			// hams = valid seqIn(i) hams
-			if ( i == 0 ) {
-				tempHams = new HashSet<String>(hams); // save verified previous hams
-			} else {
-				tempHams.retainAll(hams); // only save hams in both Sets
-			}
-		}
-
-		System.out.println("Valid hams: " + tempHams);
-	}
-
-/** /
-
-Should I make an Array of Hashsets? NO
-
-~If I do, I can just compare for matches at the end~
-
-If I don't, then I have to parallel create another temporary hashset
- for each thread, combine, and check after each combined thing
- ESSENTIALLY DONE THAT
-
-IMPROVEMENT:
-Is there a way to not have to generate new hammings and only check the old ones?
-
-YES THERE IS
- but I don't know how...
-
-/**/
-
-	/**
-	 * Main thread creates parallel threads
-	 * Depending on threadCount, create d-hamming different substrings
-	 *
-	 */
-	private static void threadMe() {
-		Thread[] threads = new Thread[p];
-		for(int j = 0; j < threads.length; j++) {
-			threads[j] = new Thread(new Volunteer("Volunteer " + j, j));
-			threads[j].start();
-		} // fine if p % 4
-
-		if( p%4 == 0 ) {
-		} else if( (p+1) % 4 == 0) { // p = 3, 7, 11
-			sliceMe(proteins.substring(3));
-		} else if ( (p-1) % 4 == 0) { // p = 1, 5, 9
-			sliceMe(proteins.substring(2,3));
-			sliceMe(proteins.substring(3));
-		} else if (p % 2 == 0) { // p = 2, 6, 10
-			sliceMe(proteins.substring(2,3));
-			sliceMe(proteins.substring(3));
-		}
-
-		// wait for all seqIn(i)'s hams to exist
-		for(int j = 0; j < threads.length; j++)
-			try {
-				threads[j].join();
-			} catch (Exception e) { System.out.println("lol threads gone cray ;((("); }
-
-	}
-
-/** /
-SUGGESTION:
-
-to make use of multithreading, have sliceMe use hams[id%4]
-will have to change '// slice substrings' to divide slices in ~equal parts into hams[id%4]
-also undo Volunteer { ... this.id = id %4 }, so to know which hams[id%4] to use
-/**/
-
-	/**
-	 * Thread calls method to create d-hammings
-	 * for each m-long dna slice, create d-hamming different variants
-	 * @param protein - either A, C, T, G
-	 *
-	 */
-	private static void sliceMe(String protein) {
-		HashSet<String> ham = new HashSet<String>();
-
-		// program is too fast that hams might update before other threads even start()
-		for( String s : new HashSet<String>(hams) ) { // iterate through each slice
-			/* Fo GGAG, produce:
-				AGAG
-				GAAG
-				GGAG
-				GGAA
-			*/
-
-			// add to own ham
-
-//			for ( int i = 0; i+d-1 < s.length(); i++) { // are you kidding me, is this #11's fix?
-//				ham.add( s.substring(0,i) .concat(protein.repeat(d)) .concat(s.substring(i+d)) );
-
-			for ( int i = 0; i+d-1 < s.length(); i++) { // are you kidding me, is this #11's fix?
-				for ( int j = 1; j <= d; j++) {
-//					ham.add( s.substring(0,i) .concat(protein.repeat(j)) .concat(s.substring(i+j)) );
-
-
-/* * /
-String str = s.substring(0,i) .concat(protein.repeat(j)) .concat(s.substring(i+j));
-ham.add(str);
-if(protein.equals("A"))
-System.out.print(i+"i "+s+":"+str+" "+"pro: "+protein+"\t");
-/**/
+					//if (mismatch <= d)
+						hams[i].add(perms[k]);
 				}
 			}
-
 		}
 
-		// combine with original
-		sem.acquire();
-		hamsCopy.addAll(ham);
-		sem.release();
+		// find same perm across all sequences
+		// 1, 2, 3, 4
+		// 2, 4, 1
+		// 1, 3
+		// 1, 2
+
+		for (int i = 1; i < hams.length; i++)
+			hams[0].retainAll(hams[i]);
+
+		// remove duplicates
+		Set<String> set = new LinkedHashSet<>();
+		set.addAll(hams[0]);
+		hams[0].clear();
+		hams[0].addAll(set);
+
+		System.out.println(hams[0]);
+// </CHANGE ME>
+/**/
 	}
 
 	private static class Volunteer implements Runnable {
@@ -204,26 +159,10 @@ System.out.print(i+"i "+s+":"+str+" "+"pro: "+protein+"\t");
 		}
 
 		public void run() {
-
-
-		/** /
-			assuming p = 4
-			when d = 2,
-			new slices only include AA, CC, TT, GG
-			Need AC, AT, AG, ... as well
-		/**/
-			if( p % 4 == 0)
-				sliceMe(proteins.substring(id,id+1));
-			else if (p < 3) { //p = 1, 2
-				sliceMe(proteins.substring(id,id+1));
-				sliceMe(proteins.substring(id+1,id+2));
-			} else if( (p+1) % 4 == 0) { // p = 3, 7, 11
-				sliceMe(proteins.substring(id,id+1));
-			} else if ( (p-1) % 4 == 0) { // p = 5, 9, 13
-				sliceMe(proteins.substring(id,id+1));
-			} else if (p % 2 == 0) { // p = 6, 10, 14
-				sliceMe(proteins.substring(id,id+1));
-			}
+			// distribute workload
+			// calculate haming distance
+			// local hashset gets valid hammings
+			// semaphore.aquire()
 		}
 	}
 }
