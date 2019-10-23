@@ -100,20 +100,23 @@ System.out.println(j + ","+ i);
 
 		// generate valid d-distance difference
 		// AA, AC, AG, AT ...
-		 //dValid(threadID)(dhammings)
-		for(int i = 0, j = 0; i < (int)Math.pow(4,d); i++ ) { // d hammings, j to p
-			// distribute workload
-			dValid.get(j).add(
-				String.format("%0" + d + "d", Integer.parseInt(Integer.toString(i, 4)))
-				.replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T")
-			);
 
-//System.out.println(j+":"+dValid.get(j));
+		// WHERE IS A, C, T, G
 
-			if (++j == p)
-				j = 0;
+		//dValid(threadID)(dhammings)
+		for(int k = 1; k <= d; k++) {
+			for(int i = 0, j = 0; i < (int)Math.pow(4,k); i++ ) { // d hammings, j to p
+				// distribute workload
+				dValid.get(j).add(
+					String.format("%0" + k + "d", Integer.parseInt(Integer.toString(i, 4)))
+					.replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T")
+				);
+
+				if (++j == p)
+					j = 0;
+			}
+dValid.forEach(System.out::println);
 		}
-
 
 		// create n-many HashSets
 		hams = new ArrayList< HashSet<String> >();
@@ -188,7 +191,7 @@ System.out.println(j + ","+ i);
 		public Volunteer(String name, int id) {
 			this.name = name;
 			this.id = id % 4;
-			localHam = new Hashset<String>();
+			localHam = new HashSet<String>();
 		}
 
 		public void run() {
