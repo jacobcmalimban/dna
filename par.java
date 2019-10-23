@@ -18,11 +18,11 @@ import java.util.*;
 public class par {
 	private static Semaphore sem = new Semaphore(1);
 	private static String[] perms;
-	private static String[][] dValid;
-	private static HashSet<String> hams = new HashSet<String>();
-	private static HashSet<String> hamsCopy = new HashSet<String>();
+	private static ArrayList< LinkedList<String> > dValid;
+	private static ArrayList< HashSet<String> > hams;
 	private static int n, l, m, d, p;
 	private static final String proteins = "ACTG";
+	private static Thread[] threads;
 
 	public static void main(String[] args) {
 		System.out.println("Jacob Malimban");
@@ -60,11 +60,10 @@ public class par {
 			System.out.println("Unable to open file" + fileName);
 		}
 
-		perms = new String[(int)Math.pow(4,m)];
-
 		// generate all m-long strings
 		// create 0 left padded base 4 strings
 		// & convert to A, C, G, T
+		perms = new String[(int)Math.pow(4,m)];
 		for(int i = 0; i<perms.length; i++) {
 			perms[i] = String.format("%0" + m + "d", Integer.parseInt(Integer.toString(i, 4)));
 			perms[i] = perms[i].replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T");
@@ -79,22 +78,54 @@ public class par {
 			dValid[i] = String.format("%0" + d + "d", Integer.parseInt(Integer.toString(i, 4)));
 			dValid[i] = dValid[i].replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T");
 		}
-/**/
 
+/** /
 		// generate valid d-distance difference
-		dValid = new String[p][(int)Math.pow(4,d)];
+		// AA, AC, AG, AT ...
+		dValid = new String[p][(int)Math.pow(4,d)/p+1]; //dValid[threadID][d-hammings to go through]
 		for(int i = 0; i < dValid[0].length; ) { // d hammings
 			for(int j = 0; j < p; j++) { // distribute workload
+System.out.println(j + ","+ i);
 				dValid[j][i] = String.format("%0" + d + "d", Integer.parseInt(Integer.toString(i, 4)));
 				dValid[j][i] = dValid[j][i].replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T");
 				i++;
 			}
 		}
+/**/
+		// init dValid
+		dValid = new ArrayList< LinkedList<String> >();
+		for( int i = 0; i < p; i++ ) {
+			dValid.add( new LinkedList<>() );
+		}
+
+		// generate valid d-distance difference
+		// AA, AC, AG, AT ...
+		 //dValid(threadID)(dhammings)
+		for(int i = 0, j = 0; i < (int)Math.pow(4,d); i++ ) { // d hammings, j to p
+			// distribute workload
+			dValid.get(j).add(
+				String.format("%0" + d + "d", Integer.parseInt(Integer.toString(i, 4)))
+				.replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T")
+			);
+
+//System.out.println(j+":"+dValid.get(j));
+
+			if (++j == p)
+				j = 0;
+		}
+
+
+		// create n-many HashSets
+		hams = new ArrayList< HashSet<String> >();
+		for(int i = 0; i < n; i++)
+			hams.add( new HashSet<String>() );
 
 		// create threads
+		threads = new Thread[p];
 		for(int i = 0; i < p; i++) {
-			
+			threads[i] = new Thread(new Volunteer("Volunteer " + i, i));
 		}
+
 		// .join()
 
 
@@ -152,16 +183,19 @@ public class par {
 	private static class Volunteer implements Runnable {
 		private String name;
 		private int id;
+		private HashSet<String> localHam;
 
 		public Volunteer(String name, int id) {
 			this.name = name;
 			this.id = id % 4;
+			localHam = new Hashset<String>();
 		}
 
 		public void run() {
-			// distribute workload
 			// calculate haming distance
+
 			// local hashset gets valid hammings
+
 			// semaphore.aquire()
 		}
 	}
