@@ -18,7 +18,7 @@ import java.util.*;
 public class par {
 	private static Semaphore sem = new Semaphore(1);
 	private static String[] perms;
-	private static ArrayList< LinkedList<String> > dValid;
+	//private static ArrayList< LinkedList<String> > dValid; // for optimizing algo
 	private static ArrayList< HashSet<String> > hams;
 	private static int n, l, m, d, p;
 	private static final String proteins = "ACTG";
@@ -69,7 +69,31 @@ public class par {
 			perms[i] = perms[i].replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T");
 		}
 
-// CHANGE ME
+// CHANGE ME (adapt below to be like above)
+
+/** /
+		// generate all m-long strings
+		// create 0 left padded base 4 strings
+		// & convert to A, C, G, T
+
+		//dValid(threadID)(dhammings)
+		// AA, AC, AG, AT ...
+		for(int k = 1; k <= d; k++) {
+			for(int i = 0, j = 0; i < (int)Math.pow(4,k); i++ ) { // d hammings, j to p
+				// distribute workload
+				dValid.get(j).add(
+					String.format("%0" + k + "d", Integer.parseInt(Integer.toString(i, 4)))
+					.replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T")
+				);
+
+				if (++j == p)
+					j = 0;
+			}
+			dValid.forEach(System.out::println);
+		}
+
+
+
 
 /** /
 		// generate valid d-distance difference
@@ -91,19 +115,19 @@ System.out.println(j + ","+ i);
 				i++;
 			}
 		}
-/**/
+
+/** /
+
 		// init dValid
 		dValid = new ArrayList< LinkedList<String> >();
 		for( int i = 0; i < p; i++ ) {
 			dValid.add( new LinkedList<>() );
 		}
 
-		// generate valid d-distance difference
-		// AA, AC, AG, AT ...
-
-		// WHERE IS A, C, T, G
+// for optimizing algos later on
 
 		//dValid(threadID)(dhammings)
+		// AA, AC, AG, AT ...
 		for(int k = 1; k <= d; k++) {
 			for(int i = 0, j = 0; i < (int)Math.pow(4,k); i++ ) { // d hammings, j to p
 				// distribute workload
@@ -115,13 +139,15 @@ System.out.println(j + ","+ i);
 				if (++j == p)
 					j = 0;
 			}
-dValid.forEach(System.out::println);
+			dValid.forEach(System.out::println);
 		}
+/**/
 
 		// create n-many HashSets
 		hams = new ArrayList< HashSet<String> >();
-		for(int i = 0; i < n; i++)
+		for(int i = 0; i < n; i++) {
 			hams.add( new HashSet<String>() );
+		}
 
 		// create threads
 		threads = new Thread[p];
@@ -131,43 +157,9 @@ dValid.forEach(System.out::println);
 
 		// .join()
 
+		// retain: for each string, compare with first and retain only same
 
 /** /
-		// slice substrings
-		// calculate hamming distance
-		int slicount = l-m+1;
-		String[][] slices = new String[n][slicount];
-
-		for(int i = 0; i < slices.length; i++) { // each dna sequence
-			hams[i] = new ArrayList<>();
-
-			for(int j = 0; j < slices[i].length; j++) { // each m-long dna slice
-				String slice = slices[i][j] = seqIn.get(i).substring(j, j+m);
-
-				outie:
-				for(int k = 0; k < perms.length; k++) { // perms = 256
-					int mismatch = 0;
-
-		// calculate hamming distance
-					for(int x = 0; x < m; x++) { // each char in slice
-						if ( slice.charAt(x) == perms[k].charAt(x) )
-							continue;
-						else
-							if (++mismatch > d)
-								continue outie; //break
-					}
-
-					//if (mismatch <= d)
-						hams[i].add(perms[k]);
-				}
-			}
-		}
-
-		// find same perm across all sequences
-		// 1, 2, 3, 4
-		// 2, 4, 1
-		// 1, 3
-		// 1, 2
 
 		for (int i = 1; i < hams.length; i++)
 			hams[0].retainAll(hams[i]);
@@ -179,19 +171,18 @@ dValid.forEach(System.out::println);
 		hams[0].addAll(set);
 
 		System.out.println(hams[0]);
-// </CHANGE ME>
 /**/
 	}
 
 	private static class Volunteer implements Runnable {
 		private String name;
 		private int id;
-		private HashSet<String> localHam;
+		private ArrayList< HashSet<String> > localHam;
 
 		public Volunteer(String name, int id) {
 			this.name = name;
 			this.id = id % 4;
-			localHam = new HashSet<String>();
+			localHam = new ArrayList<>(hams);
 		}
 
 		public void run() {
@@ -199,7 +190,50 @@ dValid.forEach(System.out::println);
 
 			// local hashset gets valid hammings
 
-			// semaphore.aquire()
+			// semaphore.aquire(), add all local hammings for each string
+
+
+
+
+/** /
+			// slice substrings
+			// calculate hamming distance
+			int slicount = l-m+1;
+			String[][] slices = new String[n][slicount];
+
+			for(int i = 0; i < slices.length; i++) { // each dna sequence
+				hams[i] = new ArrayList<>();
+
+				for(int j = 0; j < slices[i].length; j++) { // each m-long dna slice
+					String slice = slices[i][j] = seqIn.get(i).substring(j, j+m);
+
+					outie:
+					for(int k = 0; k < perms.length; k++) { // perms = 256
+						int mismatch = 0;
+
+			// calculate hamming distance
+						for(int x = 0; x < m; x++) { // each char in slice
+							if ( slice.charAt(x) == perms[k].charAt(x) )
+								continue;
+							else
+								if (++mismatch > d)
+									continue outie; //break
+						}
+
+						//if (mismatch <= d)
+							hams[i].add(perms[k]);
+					}
+				}
+			}
+
+			// find same perm across all sequences
+			// 1, 2, 3, 4
+			// 2, 4, 1
+			// 1, 3
+			// 1, 2
+
+/**/
+
 		}
 	}
 }
