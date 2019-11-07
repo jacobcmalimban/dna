@@ -78,6 +78,79 @@ public class par {
 			perms[i] = perms[i].replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T");
 		}
 
+// CHANGE ME (adapt below to be like above)
+
+/** /
+		// generate all m-long strings
+		// create 0 left padded base 4 strings
+		// & convert to A, C, G, T
+
+		//dValid(threadID)(dhammings)
+		// AA, AC, AG, AT ...
+		for(int k = 1; k <= d; k++) {
+			for(int i = 0, j = 0; i < (int)Math.pow(4,k); i++ ) { // d hammings, j to p
+				// distribute workload
+				dValid.get(j).add(
+					String.format("%0" + k + "d", Integer.parseInt(Integer.toString(i, 4)))
+					.replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T")
+				);
+
+				if (++j == p)
+					j = 0;
+			}
+			dValid.forEach(System.out::println);
+		}
+
+
+
+
+/** /
+		// generate valid d-distance difference
+		dValid = new String[(int)Math.pow(4,d)];
+		for(int i = 0; i < dValid.length; i++) { // d hammings
+			dValid[i] = String.format("%0" + d + "d", Integer.parseInt(Integer.toString(i, 4)));
+			dValid[i] = dValid[i].replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T");
+		}
+
+/** /
+		// generate valid d-distance difference
+		// AA, AC, AG, AT ...
+		dValid = new String[p][(int)Math.pow(4,d)/p+1]; //dValid[threadID][d-hammings to go through]
+		for(int i = 0; i < dValid[0].length; ) { // d hammings
+			for(int j = 0; j < p; j++) { // distribute workload
+System.out.println(j + ","+ i);
+				dValid[j][i] = String.format("%0" + d + "d", Integer.parseInt(Integer.toString(i, 4)));
+				dValid[j][i] = dValid[j][i].replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T");
+				i++;
+			}
+		}
+
+/** /
+
+		// init dValid
+		dValid = new ArrayList< LinkedList<String> >();
+		for( int i = 0; i < p; i++ ) {
+			dValid.add( new LinkedList<>() );
+		}
+
+// for optimizing algos later on
+
+		//dValid(threadID)(dhammings)
+		// AA, AC, AG, AT ...
+		for(int k = 1; k <= d; k++) {
+			for(int i = 0, j = 0; i < (int)Math.pow(4,k); i++ ) { // d hammings, j to p
+				// distribute workload
+				dValid.get(j).add(
+					String.format("%0" + k + "d", Integer.parseInt(Integer.toString(i, 4)))
+					.replaceAll("0","A").replaceAll("1","C").replaceAll("2","G").replaceAll("3","T")
+				);
+
+				if (++j == p)
+					j = 0;
+			}
+			dValid.forEach(System.out::println);
+		}
+/**/
 
 		// create n-many HashSets
 		hams = new ArrayList< HashSet<String> >();
@@ -103,6 +176,19 @@ public class par {
 			hams.get(0).retainAll( hams.get(i) );
 
 		System.out.println(hams.get(0) + "\nSize:"+hams.get(0).size());
+/** /
+
+		for (int i = 1; i < hams.length; i++)
+			hams[0].retainAll(hams[i]);
+
+		// remove duplicates
+		Set<String> set = new LinkedHashSet<>();
+		set.addAll(hams[0]);
+		hams[0].clear();
+		hams[0].addAll(set);
+
+		System.out.println(hams[0]);
+/**/
 	}
 
 	private static class Volunteer implements Runnable {
@@ -149,6 +235,49 @@ public class par {
 			for(int i = 0; i < n; i++)
 				hams.get(i).addAll( localHam.get(i) );
 			sem.release();
+
+
+
+
+/** /
+			// slice substrings
+			// calculate hamming distance
+			int slicount = l-m+1;
+			String[][] slices = new String[n][slicount];
+
+			for(int i = 0; i < slices.length; i++) { // each dna sequence
+				hams[i] = new ArrayList<>();
+
+				for(int j = 0; j < slices[i].length; j++) { // each m-long dna slice
+					String slice = slices[i][j] = seqIn.get(i).substring(j, j+m);
+
+					outie:
+					for(int k = 0; k < perms.length; k++) { // perms = 256
+						int mismatch = 0;
+
+			// calculate hamming distance
+						for(int x = 0; x < m; x++) { // each char in slice
+							if ( slice.charAt(x) == perms[k].charAt(x) )
+								continue;
+							else
+								if (++mismatch > d)
+									continue outie; //break
+						}
+
+						//if (mismatch <= d)
+							hams[i].add(perms[k]);
+					}
+				}
+			}
+
+			// find same perm across all sequences
+			// 1, 2, 3, 4
+			// 2, 4, 1
+			// 1, 3
+			// 1, 2
+
+/**/
+
 		}
 	}
 }
