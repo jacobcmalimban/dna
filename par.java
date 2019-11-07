@@ -18,6 +18,7 @@ import java.util.*;
 public class par {
 	private static Semaphore sem = new Semaphore(1);
 	private static String[] perms;
+	private static String[][] slices;
 	//private static ArrayList< LinkedList<String> > dValid; // for optimizing algo
 	private static ArrayList< HashSet<String> > hams;
 	private static int n, l, m, d, p;
@@ -58,6 +59,15 @@ public class par {
 			bReader.close();
 		} catch(Exception e) {
 			System.out.println("Unable to open file" + fileName);
+		}
+
+		// slices
+		slices = new String[n][l-(m-1)];
+		for(int i = 0; i < slices.length; i++) {
+			for(int j = 0; j < slices[i].length; j++) {
+				slices[i][j] = seqIn.get(i).substring(j,j+m);
+System.out.println(slices[i][j]);
+			}
 		}
 
 		// generate all m-long strings
@@ -194,11 +204,11 @@ System.out.println(j + ","+ i);
 		}
 
 		public void run() {
-System.out.println((perms.length/p * id) - (perms.length/p) +"<"+perms.length/p * (id-1)+"<"+perms.length);
 			for(int i = 0; i < localHam.size(); i++) {
+
 				// calculate haming distance
-				for(int j = (perms.length/p * id) - (perms.length/p); j < perms.length/p * (id-1); j++) {
-					localHam.get(i).add(id +":"+j);
+				for(int j = (perms.length/p * id) - (perms.length/p); j < perms.length/p * (id-1); j++) { //distributed workload
+//					for(int k = 0; k+m <= //each substring
 				}
 				// local hashset gets valid hammings
 			}
