@@ -66,7 +66,6 @@ public class par {
 		for(int i = 0; i < slices.length; i++) {
 			for(int j = 0; j < slices[i].length; j++) {
 				slices[i][j] = seqIn.get(i).substring(j,j+m);
-System.out.println(slices[i][j]);
 			}
 		}
 
@@ -157,13 +156,12 @@ System.out.println(j + ","+ i);
 		hams = new ArrayList< HashSet<String> >();
 		for(int i = 0; i < n; i++) {
 			hams.add( new HashSet<String>() );
-			hams.get(i).add("H"+i);
 		}
 
 		// create threads
 		threads = new Thread[p];
 		for(int i = 0; i < p; i++) {
-			threads[i] = new Thread(new Volunteer("Volunteer", i+1));
+			threads[i] = new Thread(new Volunteer("Volunteer", i));
 			threads[i].start();
 		}
 
@@ -174,8 +172,10 @@ System.out.println(j + ","+ i);
 		} catch(Exception e) {System.out.println("oof");}
 
 		// retain: for each string, compare with first and retain only same
-//		hams.forEach(System.out::println);
+		for(int i = 1; i < n; i++)
+			hams.get(0).retainAll( hams.get(i) );
 
+		System.out.println(hams.get(0) + "\nSize:"+hams.get(0).size());
 /** /
 
 		for (int i = 1; i < hams.length; i++)
@@ -200,17 +200,34 @@ System.out.println(j + ","+ i);
 			this.name = name + " " + id;
 			this.id = id;
 			localHam = new ArrayList<>(hams);
-			System.out.println(this.name);
 		}
 
 		public void run() {
 			for(int i = 0; i < localHam.size(); i++) {
 
+//System.out.println( (perms.length/p * id)+ "<" +(perms.length/p * (id+1)) + "<" + perms.length );
+
 				// calculate haming distance
-				for(int j = (perms.length/p * id) - (perms.length/p); j < perms.length/p * (id-1); j++) { //distributed workload
-//					for(int k = 0; k+m <= //each substring
+				for(int j = (perms.length/p * id); j < perms.length/p * (id+1); j++) { //distributed workload
+
+					for(int k = 0; k < slices[i].length; k++){ // look at all [i][k] slices
+
+						int mis = 0;
+						for(int x = 0; x < m; x++) { // d hammings
+							if(slices[i][k].charAt(x) != perms[j].charAt(x)) {
+								mis++;
+								if(mis > d)
+									break;
+							}
+						}
+
+						// local hashset gets valid hammings
+						if(mis <= d) {
+							localHam.get(i).add(perms[j]);
+						}
+
+					}
 				}
-				// local hashset gets valid hammings
 			}
 
 			// semaphore.acquire(), add all local hammings for each string
