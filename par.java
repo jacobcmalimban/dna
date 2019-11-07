@@ -147,17 +147,24 @@ System.out.println(j + ","+ i);
 		hams = new ArrayList< HashSet<String> >();
 		for(int i = 0; i < n; i++) {
 			hams.add( new HashSet<String>() );
+			hams.get(i).add("H"+i);
 		}
 
 		// create threads
 		threads = new Thread[p];
 		for(int i = 0; i < p; i++) {
-			threads[i] = new Thread(new Volunteer("Volunteer " + i, i));
+			threads[i] = new Thread(new Volunteer("Volunteer", i+1));
+			threads[i].start();
 		}
 
 		// .join()
+		try{
+			for(int i = 0; i < p; i++)
+				threads[i].join();
+		} catch(Exception e) {System.out.println("oof");}
 
 		// retain: for each string, compare with first and retain only same
+//		hams.forEach(System.out::println);
 
 /** /
 
@@ -180,17 +187,27 @@ System.out.println(j + ","+ i);
 		private ArrayList< HashSet<String> > localHam;
 
 		public Volunteer(String name, int id) {
-			this.name = name;
-			this.id = id % 4;
+			this.name = name + " " + id;
+			this.id = id;
 			localHam = new ArrayList<>(hams);
+			System.out.println(this.name);
 		}
 
 		public void run() {
-			// calculate haming distance
+System.out.println((perms.length/p * id) - (perms.length/p) +"<"+perms.length/p * (id-1)+"<"+perms.length);
+			for(int i = 0; i < localHam.size(); i++) {
+				// calculate haming distance
+				for(int j = (perms.length/p * id) - (perms.length/p); j < perms.length/p * (id-1); j++) {
+					localHam.get(i).add(id +":"+j);
+				}
+				// local hashset gets valid hammings
+			}
 
-			// local hashset gets valid hammings
-
-			// semaphore.aquire(), add all local hammings for each string
+			// semaphore.acquire(), add all local hammings for each string
+			sem.acquire();
+			for(int i = 0; i < n; i++)
+				hams.get(i).addAll( localHam.get(i) );
+			sem.release();
 
 
 
